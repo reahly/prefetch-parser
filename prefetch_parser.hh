@@ -138,6 +138,7 @@ public:
 	SETUP_VARIABLE( int, volumes_count( ), data.data( ), 0x70 )
 	SETUP_VARIABLE( int, volumes_information_size( ), data.data( ), 0x74 )
 	SETUP_VARIABLE( int, run_count( ), data.data( ), 0xd0 )
+	SETUP_VARIABLE( uintptr_t, executed_timestamp( ), data.data( ), 128 )
 
 	[[nodiscard]] bool success( ) const {
 		return !data.empty( );
@@ -167,15 +168,6 @@ public:
 	}
 
 	[[nodiscard]] std::string executed_time( ) const {
-		std::vector<uint8_t> out;
-		out.reserve( 64 );
-
-		const auto begin = data.begin( ) + 128;
-		std::copy_n( begin, 64, std::back_inserter( out ) );
-
-		uintptr_t timestamp;
-		std::memcpy( &timestamp, out.data( ), sizeof( uintptr_t ) );
-
-		return convert_timestamp( timestamp );
+		return convert_timestamp( executed_timestamp( ) );
 	}
 };
