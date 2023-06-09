@@ -138,7 +138,7 @@ public:
 	SETUP_VARIABLE( int, volumes_count( ), data.data( ), 0x70 )
 	SETUP_VARIABLE( int, volumes_information_size( ), data.data( ), 0x74 )
 	SETUP_VARIABLE( int, run_count( ), data.data( ), 0xd0 )
-	SETUP_VARIABLE( uintptr_t, executed_timestamp( ), data.data( ), 128 )
+	SETUP_VARIABLE( uintptr_t, executed_timestamp( ), data.data( ), 0x80 )
 
 	[[nodiscard]] bool success( ) const {
 		return !data.empty( );
