@@ -7,7 +7,7 @@ if ( !parser.success( ) )
 	return -1;
 
 printf( "Run Count: %i \n", parser.run_count( ) );
-printf( "Executed Time: %s \n", parser.executed_time( ).c_str( ) );
+printf( "Executed Time: %lld \n", parser.executed_time( ) );
 
 printf( "File Names: \n" );
 for ( const auto& i : parser.get_filenames_strings( ) )
