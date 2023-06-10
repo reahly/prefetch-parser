@@ -1,9 +1,7 @@
 #pragma once
-#include <chrono>
 #include <string>
 #include <vector>
 #include <fstream>
-#include <iomanip>
 #include <span>
 #include <Windows.h>
 
@@ -25,30 +23,6 @@ inline bool read_file( const std::string& name, std::vector<char>& out ) {
 	file.close( );
 
 	return true;
-}
-
-inline std::string convert_timestamp( const uintptr_t timestamp ) {
-	ULARGE_INTEGER file_time;
-	file_time.QuadPart = timestamp;
-
-	const auto file_time_ptr = reinterpret_cast<const FILETIME*>( &file_time );
-
-	ULARGE_INTEGER uli_file_time;
-	uli_file_time.LowPart = file_time_ptr->dwLowDateTime;
-	uli_file_time.HighPart = file_time_ptr->dwHighDateTime;
-
-	SYSTEMTIME system_time;
-	FileTimeToSystemTime( reinterpret_cast<const FILETIME*>( &uli_file_time ), &system_time );
-
-	SYSTEMTIME local_time;
-	SystemTimeToTzSpecificLocalTime( nullptr, &system_time, &local_time );
-
-	char buffer[256];
-	snprintf( buffer, sizeof buffer, "%04d-%02d-%02d %02d:%02d:%02d",
-	          local_time.wYear, local_time.wMonth, local_time.wDay,
-	          local_time.wHour, local_time.wMinute, local_time.wSecond );
-
-	return std::string( buffer );
 }
 
 #define SETUP_VARIABLE( type, name, data, offset ) [[nodiscard]] type name const { type var; std::memcpy( &var,  ( data ) + ( offset ), sizeof( type ) ); return var; }
@@ -125,22 +99,22 @@ public:
 			free( workspace );
 
 			data = decompressed_data;
-		} else
+		} else if ( content.at( 4 ) == 'S' && content.at( 5 ) == 'C' && content.at( 6 ) == 'C' && content.at( 7 ) == 'A' )
 			data = content;
 	}
 
 	SETUP_VARIABLE( int, version( ), data.data( ), 0x0 )
-	SETUP_VARIABLE( int, signature( ), data.data( ), 0x4 )
-	SETUP_VARIABLE( int, file_size( ), data.data( ), 0xC )
-	SETUP_VARIABLE( int, file_name_strings_offset( ), data.data( ), 0x64 )
-	SETUP_VARIABLE( int, file_name_strings_size( ), data.data( ), 0x68 )
-	SETUP_VARIABLE( int, volume_information_offset( ), data.data( ), 0x6C )
-	SETUP_VARIABLE( int, volumes_count( ), data.data( ), 0x70 )
-	SETUP_VARIABLE( int, volumes_information_size( ), data.data( ), 0x74 )
-	SETUP_VARIABLE( int, run_count( ), data.data( ), 0xd0 )
-	SETUP_VARIABLE( uintptr_t, executed_timestamp( ), data.data( ), 0x80 )
+		SETUP_VARIABLE( int, signature( ), data.data( ), 0x4 )
+		SETUP_VARIABLE( int, file_size( ), data.data( ), 0xC )
+		SETUP_VARIABLE( int, file_name_strings_offset( ), data.data( ), 0x64 )
+		SETUP_VARIABLE( int, file_name_strings_size( ), data.data( ), 0x68 )
+		SETUP_VARIABLE( int, volume_information_offset( ), data.data( ), 0x6C )
+		SETUP_VARIABLE( int, volumes_count( ), data.data( ), 0x70 )
+		SETUP_VARIABLE( int, volumes_information_size( ), data.data( ), 0x74 )
+		SETUP_VARIABLE( int, run_count( ), data.data( ), 0xd0 )
+		SETUP_VARIABLE( uintptr_t, executed_timestamp( ), data.data( ), 0x80 )
 
-	[[nodiscard]] bool success( ) const {
+		[[nodiscard]] bool success( ) const {
 		return !data.empty( );
 	}
 
@@ -154,7 +128,7 @@ public:
 		std::vector<std::wstring> resources;
 		std::wstring name;
 		for ( auto i = 0; i < filenames.size( ); i += sizeof( wchar_t ) ) {
-			const auto ch = *reinterpret_cast<const wchar_t*>( &filenames[i] );
+			const auto ch = *reinterpret_cast<const wchar_t*>( &filenames.at( i ) );
 			if ( ch == L'\0' ) {
 				resources.push_back( name );
 				name.clear( );
@@ -167,7 +141,19 @@ public:
 		return resources;
 	}
 
-	[[nodiscard]] std::string executed_time( ) const {
-		return convert_timestamp( executed_timestamp( ) );
+	[[nodiscard]] time_t executed_time( ) const {
+		const auto filetime_to_timet = []( const FILETIME& ft ) {
+			ULARGE_INTEGER ull;
+			ull.LowPart = ft.dwLowDateTime;
+			ull.HighPart = ft.dwHighDateTime;
+
+			return ull.QuadPart / 10000000ULL - 11644473600ULL;
+		};
+
+		ULARGE_INTEGER file_time;
+		file_time.QuadPart = executed_timestamp();
+
+		const auto file_time_ptr = reinterpret_cast<const FILETIME*>( &file_time );
+		return filetime_to_timet( *file_time_ptr );
 	}
 };
