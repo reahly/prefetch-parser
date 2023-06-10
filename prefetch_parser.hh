@@ -104,17 +104,17 @@ public:
 	}
 
 	SETUP_VARIABLE( int, version( ), data.data( ), 0x0 )
-		SETUP_VARIABLE( int, signature( ), data.data( ), 0x4 )
-		SETUP_VARIABLE( int, file_size( ), data.data( ), 0xC )
-		SETUP_VARIABLE( int, file_name_strings_offset( ), data.data( ), 0x64 )
-		SETUP_VARIABLE( int, file_name_strings_size( ), data.data( ), 0x68 )
-		SETUP_VARIABLE( int, volume_information_offset( ), data.data( ), 0x6C )
-		SETUP_VARIABLE( int, volumes_count( ), data.data( ), 0x70 )
-		SETUP_VARIABLE( int, volumes_information_size( ), data.data( ), 0x74 )
-		SETUP_VARIABLE( int, run_count( ), data.data( ), 0xd0 )
-		SETUP_VARIABLE( uintptr_t, executed_timestamp( ), data.data( ), 0x80 )
+	SETUP_VARIABLE( int, signature( ), data.data( ), 0x4 )
+	SETUP_VARIABLE( int, file_size( ), data.data( ), 0xC )
+	SETUP_VARIABLE( int, file_name_strings_offset( ), data.data( ), 0x64 )
+	SETUP_VARIABLE( int, file_name_strings_size( ), data.data( ), 0x68 )
+	SETUP_VARIABLE( int, volume_information_offset( ), data.data( ), 0x6C )
+	SETUP_VARIABLE( int, volumes_count( ), data.data( ), 0x70 )
+	SETUP_VARIABLE( int, volumes_information_size( ), data.data( ), 0x74 )
+	SETUP_VARIABLE( int, run_count( ), data.data( ), 0xd0 )
+	SETUP_VARIABLE( uintptr_t, executed_timestamp( ), data.data( ), 0x80 )
 
-		[[nodiscard]] bool success( ) const {
+	[[nodiscard]] bool success( ) const {
 		return !data.empty( );
 	}
 
